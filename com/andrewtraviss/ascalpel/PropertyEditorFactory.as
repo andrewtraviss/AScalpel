@@ -19,6 +19,7 @@ package com.andrewtraviss.ascalpel
 		public function PropertyEditorFactory()
 		{
 			_defaultEditorsForTypes = new Dictionary();
+			_defaultPropertiesForTypes = new Dictionary();
 		}
 		
 		public function registerEditorClass(in_editorClass:String, in_valueName:String, in_initEvent:String, in_commitEvent:String):void
@@ -27,9 +28,10 @@ package com.andrewtraviss.ascalpel
 			_commitEventsForEditors[in_editorClass] = in_commitEvent;
 		}
 		
-		public function setDefaultEditorClassForType(in_editorClass:String, in_type:Class):void
+		public function setDefaultEditorClassForType(in_editorClass:String, in_type:Class, in_properties:Object):void
 		{
 			_defaultEditorsForTypes[in_type] = in_editorClass;
+			_defaultPropertiesForTypes[in_type] = in_properties;
 		}
 		
 		public function fromXML(in_xml:XML):PropertyEditor
@@ -39,8 +41,11 @@ package com.andrewtraviss.ascalpel
 			var editorEvent:String = getCommitEventFor(editorClassName);
 			var editorInstance:* = instanceFromClassName(editorClassName);
 			
+			var defaultEditorProperties:Object = getDefaultEditorPropertiesFor(in_xml);
+			applyDefaultPropertiesToEditor(defaultEditorProperties, editorInstance);
+			
 			var potentialEditorProperties:Array = getUnreservedArgumentsFrom(in_xml);
-			applyPropertiesToEditor(potentialEditorProperties, editorInstance);
+			applyPropertiesFromXMLToEditor(potentialEditorProperties, editorInstance);
 			
 			var propertyEditor:PropertyEditor = new PropertyEditor();
 			propertyEditor.useView(editorInstance);
@@ -99,7 +104,20 @@ package com.andrewtraviss.ascalpel
 			return new classReference();
 		}
 		
-		private function applyPropertiesToEditor(in_properties:Array, in_editor:*):void
+		private function applyDefaultPropertiesToEditor(in_properties:Object, in_editor:*):void
+		{
+			var value:String;
+			for(var key:String in in_properties)
+			{
+				value = in_properties[key];
+				if(in_editor.hasOwnProperty(key))
+				{
+					in_editor[key] = value;
+				}
+			}
+		}
+		
+		private function applyPropertiesFromXMLToEditor(in_properties:Array, in_editor:*):void
 		{
 			var key:String;
 			var value:String;
@@ -112,6 +130,11 @@ package com.andrewtraviss.ascalpel
 					in_editor[key] = value;
 				}
 			}
+		}
+		
+		private function getDefaultEditorPropertiesFor(in_property:XML):Object
+		{
+			return _defaultPropertiesForTypes[getDefinitionByName(in_property.@type)];
 		}
 		
 		private function getUnreservedArgumentsFrom(in_property:XML):Array
@@ -155,6 +178,7 @@ package com.andrewtraviss.ascalpel
 		private var _commitEventsForEditors:Object = {};
 		private var _valueNamesForEditors:Object = {};
 		private var _defaultEditorsForTypes:Dictionary;
+		private var _defaultPropertiesForTypes:Dictionary;
 		
 		private var RESERVED_PARAMETERS:Array = ["editorClass", "explicitCommit"];
 		private var POSSIBLE_IMPLICIT_FIELDS:Array = ["value", "selectedValue", "text", "selectedItem"];

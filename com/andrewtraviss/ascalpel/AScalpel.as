@@ -35,7 +35,7 @@ package com.andrewtraviss.ascalpel
 		
 		public function setDefaultEditorClassForType(in_editorClass:String, in_type:Class, in_editorProperties:Object=null):void
 		{
-			PropertyEditorFactory.instance.setDefaultEditorClassForType(in_editorClass, in_type);
+			PropertyEditorFactory.instance.setDefaultEditorClassForType(in_editorClass, in_type, in_editorProperties);
 		}
 		
 		public function addObject(in_object:*):void
