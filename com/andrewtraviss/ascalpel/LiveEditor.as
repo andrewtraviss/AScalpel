@@ -1,3 +1,23 @@
+/*
+Copyright (C) 2011 by Andrew Traviss
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+*/
 package com.andrewtraviss.ascalpel
 {
 	import com.bit101.components.Component;
@@ -23,8 +43,17 @@ package com.andrewtraviss.ascalpel
 			updateWindowSize();
 		}
 		
+		private function updateWindowSize():void
+		{
+			if(window)
+			{
+				window.setSize(width + 40, height + 40);
+			}
+		}
+		
 		private function createEditors():void
-		{			
+		{
+			_reflection = describeType(_object);
 			createFieldsFor(_reflection..accessor);
 			createFieldsFor(_reflection..variable);
 			createButtonBar();
@@ -46,18 +75,11 @@ package com.andrewtraviss.ascalpel
 		
 		private function createButtonBar():void
 		{
-			_buttonBar = new HBox();
+			_buttonBar = new VBox();
 			addChild(_buttonBar);
 			createCloseButton();
 			createRefreshButton();
-		}
-		
-		private function updateWindowSize():void
-		{
-			if(window)
-			{
-				window.setSize(width + 40, height + 40);
-			}
+			createApplyAllButton();
 		}
 		
 		private function addEditorFor(in_property:XML):void
@@ -90,6 +112,15 @@ package com.andrewtraviss.ascalpel
 			_refreshButton.draw();
 		}
 		
+		private function createApplyAllButton():void
+		{
+			_applyAllButton = new PushButton();
+			_applyAllButton.label = "Apply All";
+			_applyAllButton.addEventListener(MouseEvent.CLICK, handleClickedApplyAllButton);
+			_buttonBar.addChild(_applyAllButton);
+			_applyAllButton.draw();
+		}
+		
 		private function handleClickedCloseButton(in_event:MouseEvent):void
 		{
 			AScalpel.instance.removeEditor(this);
@@ -97,11 +128,44 @@ package com.andrewtraviss.ascalpel
 		
 		private function handleClickedRefreshButton(in_event:MouseEvent):void
 		{
+			refresh();
+		}
+		
+		private function handleClickedApplyAllButton(in_event:MouseEvent):void
+		{
+			applyAll();
+		}
+		
+		private function refresh():void
+		{
 			var editor:PropertyEditor;
 			for(var i:int=0; i<_properties.length; i++)
 			{
 				editor = _properties[i];
 				editor.refresh();
+			}
+		}
+		
+		private function applyNonExplicit():void
+		{
+			var editor:PropertyEditor;
+			for(var i:int=0; i<_properties.length; i++)
+			{
+				editor = _properties[i];
+				if(!editor.explicitCommit)
+				{
+					editor.apply();
+				}
+			}
+		}
+		
+		private function applyAll():void
+		{
+			var editor:PropertyEditor;
+			for(var i:int=0; i<_properties.length; i++)
+			{
+				editor = _properties[i];
+				editor.apply();
 			}
 		}
 		
@@ -123,7 +187,8 @@ package com.andrewtraviss.ascalpel
 		private function createEditorFor(in_property:XML):PropertyEditor
 		{
 			var propertyEditor:PropertyEditor = PropertyEditorFactory.instance.fromXML(in_property);
-			propertyEditor.targetProperty(_object, in_property.@name);
+			propertyEditor.setTarget(_object, in_property.@name);
+			propertyEditor.refresh();
 			_currentEditorContainer.addChild(propertyEditor.view);
 			return propertyEditor;
 		}
@@ -139,15 +204,37 @@ package com.andrewtraviss.ascalpel
 			return button;
 		}
 		
+		private function retargetPropertyEditors():void
+		{
+			var propertyEditor:PropertyEditor;
+			for(var i:int=0; i<_properties.length; i++)
+			{
+				propertyEditor = _properties[i];
+				propertyEditor.setTarget(_object);
+			}
+		}
+		
 		public function get value():*
 		{
 			return _object;
 		}
 		public function set value(in_value:*):void
 		{
-			_object = in_value;
-			_reflection = describeType(_object);
-			createEditors();
+			if(_object == in_value)
+			{
+				return;
+			}
+			if(_object)
+			{
+				_object = in_value;
+				retargetPropertyEditors();
+				applyNonExplicit();
+			}
+			else
+			{
+				_object = in_value;
+				createEditors();
+			}
 		}
 		
 		public function get display():DisplayObjectContainer
@@ -161,8 +248,9 @@ package com.andrewtraviss.ascalpel
 		private var _properties:Array = [];
 		private var _editors:Object = {};
 		private var _currentEditorContainer:HBox;
-		private var _buttonBar:HBox;
+		private var _buttonBar:VBox;
 		private var _closeButton:PushButton;
 		private var _refreshButton:PushButton;
+		private var _applyAllButton:PushButton;
 	}
 }

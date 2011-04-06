@@ -1,3 +1,23 @@
+/*
+Copyright (C) 2011 by Andrew Traviss
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+*/
 package com.andrewtraviss.ascalpel
 {
 	import flash.display.DisplayObject;
@@ -28,39 +48,38 @@ package com.andrewtraviss.ascalpel
 			_commitEventsForEditors[in_editorClass] = in_commitEvent;
 		}
 		
-		public function setDefaultEditorClassForType(in_editorClass:String, in_type:Class, in_properties:Object):void
+		public function setDefaultEditorClassForType(in_editorClass:String, in_type:Class, in_defaultProperties:Object):void
 		{
 			_defaultEditorsForTypes[in_type] = in_editorClass;
-			_defaultPropertiesForTypes[in_type] = in_properties;
+			_defaultPropertiesForTypes[in_type] = in_defaultProperties;
 		}
 		
 		public function fromXML(in_xml:XML):PropertyEditor
 		{
-			var editorClassName:String = getEditorClassNameFor(in_xml);
-			var editorField:String = getValueFieldFor(editorClassName);
-			var editorEvent:String = getCommitEventFor(editorClassName);
-			var editorInstance:* = instanceFromClassName(editorClassName);
+			var className:String = getEditorClassNameFor(in_xml);
+			var field:String = getValueFieldFor(className);
+			var event:String = getCommitEventFor(className);
+			var editor:* = instanceFromClassName(className);
 			
 			var defaultEditorProperties:Object = getDefaultEditorPropertiesFor(in_xml);
-			applyDefaultPropertiesToEditor(defaultEditorProperties, editorInstance);
+			applyDefaultPropertiesToEditor(defaultEditorProperties, editor);
 			
 			var potentialEditorProperties:Array = getUnreservedArgumentsFrom(in_xml);
-			applyPropertiesFromXMLToEditor(potentialEditorProperties, editorInstance);
+			applyPropertiesFromXMLToEditor(potentialEditorProperties, editor);
 			
 			var propertyEditor:PropertyEditor = new PropertyEditor();
-			propertyEditor.useView(editorInstance);
-			propertyEditor.useEditorProperty(editorField);
+			propertyEditor.useView(editor);
+			propertyEditor.useEditorProperty(field);
 			
-			
-			var result:String = getArgumentValueFrom("explicitCommit", in_xml);
-			if(result == "true")
+			var explicitCommitEnabled:String = getArgumentValueFrom("explicitCommit", in_xml);
+			if(explicitCommitEnabled == "true")
 			{
 				propertyEditor.explicitCommit = true;
 			}
 			else
 			{
-				propertyEditor.useCommitControl(editorInstance);
-				propertyEditor.useCommitEvent(editorEvent);
+				propertyEditor.useCommitControl(editor);
+				propertyEditor.useCommitEvent(event);
 			}
 			
 			return propertyEditor;
@@ -68,12 +87,12 @@ package com.andrewtraviss.ascalpel
 		
 		private function getEditorClassNameFor(in_property:XML):String
 		{
-			var editorClassName:String = getArgumentValueFrom("editorClass", in_property);
-			if(!editorClassName || editorClassName == "")
+			var className:String = getArgumentValueFrom("editorClass", in_property);
+			if(!className || className == "")
 			{
-				editorClassName = _defaultEditorsForTypes[getDefinitionByName(in_property.@type)];
+				className = _defaultEditorsForTypes[getDefinitionByName(in_property.@type)];
 			}
-			return editorClassName;
+			return className;
 		}
 		
 		private function getValueFieldFor(in_editor:String):String

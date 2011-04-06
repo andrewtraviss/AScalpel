@@ -9,3 +9,9 @@ v 1.0
 - Implemented [Editable explicityCommit="true"]
 - Implemented [Editable editorClass="com.fully.qualified.ClassName"]
 - Implemented editor custom configuration using non-reserved parameters
+
+v 1.1
+- Added the "Apply All" button
+- Added ASDoc comments to the main AScalpel class
+- A new instance with the same name will now inherit an existing editor used for a different object with the same instance name
+- When editors are closed and reopened they will retain their last configured values
