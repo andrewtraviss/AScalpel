@@ -18,6 +18,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 */
+/**
+ * @private
+ */
 package com.andrewtraviss.ascalpel
 {
 	import com.bit101.components.Component;
@@ -53,7 +56,7 @@ package com.andrewtraviss.ascalpel
 		
 		private function createEditors():void
 		{
-			_reflection = describeType(_object);
+			_reflection = MetadataBuffer.instance.getMetadataForInstance(_object);
 			createFieldsFor(_reflection..accessor);
 			createFieldsFor(_reflection..variable);
 			createButtonBar();

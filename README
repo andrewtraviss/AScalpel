@@ -1,7 +1,12 @@
 A lightweight framework for editing objects at runtime in Actionscript 3.0
 
 Homepage: http://blog.andrewtraviss.com/tag/ascalpel/
-Requires: http://code.google.com/p/minimalcomps/
+Requires: http://www.minimalcomps.com/
+
+v 1.2
+- Added the ability to supply metadata for a type at runtime, overriding describeType
+- Buffered describeType results in order to support runtime metadata
+- Added more API documentation
 
 v 1.1
 - Added the "Apply All" button

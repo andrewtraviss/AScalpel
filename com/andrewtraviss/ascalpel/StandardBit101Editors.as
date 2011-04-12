@@ -31,9 +31,27 @@ package com.andrewtraviss.ascalpel
 	
 	import flash.events.Event;
 	import flash.events.MouseEvent;
-
+	
+	/**
+	 * A helper class that performs the setup tasks necessary to integrate the Bit-101 Minimal Components with AScalpel for all basic data types.
+	 */
 	public class StandardBit101Editors
 	{
+		/**
+		 * Triggers setup. Registers the following components for use:
+		 * 
+		 * <ul>
+		 * <li>com.bit101.components.InputText</li>
+		 * <li>com.bit101.components.NumericStepper</li>
+		 * <li>com.bit101.components.ColorChooser</li>
+		 * <li>com.bit101.components.CheckBox</li>
+		 * <li>com.bit101.components.Knob</li>
+		 * <li>com.bit101.components.Slider</li>
+		 * <li>com.bit101.components.TextArea</li>
+		 * </ul>
+		 * 
+		 * Also defines default editors for String, Number, int, uint, and Boolean.
+		 */
 		public static function install():void
 		{
 			AScalpel.instance.registerEditorClass(com.bit101.components.InputText, "text", Component.DRAW, Event.CHANGE);

@@ -18,6 +18,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 */
+/**
+ * This class supports the registration of editor classes, setting of default editors for each type and adding objects to the editor.
+ * 
+ */
 package com.andrewtraviss.ascalpel
 {
 	import com.bit101.components.ComboBox;
@@ -32,21 +36,21 @@ package com.andrewtraviss.ascalpel
 	public class AScalpel
 	{
 		/**
-		 * 
+		 * Singleton.
 		 */
 		public static function get instance():AScalpel
 		{
 			if(!_instance)
 			{
-				_instance = new AScalpel();
+				_instance = new AScalpel(new SingletonToken());
 			}
 			return _instance;
 		}
 		
 		/**
-		 * 
+		 * Constructor. AScalpel cannot be directly instantiated.
 		 */
-		public function AScalpel()
+		public function AScalpel(TOKEN:SingletonToken)
 		{
 			createMainUI();
 			_activeEditorsByObject = new Dictionary();
@@ -77,6 +81,18 @@ package com.andrewtraviss.ascalpel
 		{
 			var name:String = getClassNameWithPackage(in_editorClass);
 			PropertyEditorFactory.instance.setDefaultEditorClassForType(name, in_type, in_defaultProperties);
+		}
+		
+		/**
+		 * Sets the metadata for a particular type. This metadata will be used to build editors for that type instead of the output of describeType. This allows classes which cannot be changed to add metadata to be used with AScalpel. 
+		 * 
+		 * @param in_type				The Class which metadata will be specified for.
+		 * @param in_metadata			An XML in the same format as the output of describeType.
+		 */
+		public function setMetadataForType(in_type:Class, in_metadata:XML):void
+		{
+			var name:String = getClassNameWithPackage(in_type);
+			MetadataBuffer.instance.setMetadataFor(name, in_metadata);
 		}
 		
 		/**
@@ -218,6 +234,9 @@ package com.andrewtraviss.ascalpel
 			return true
 		}
 		
+		/**
+		 * Whether or not the main AScalpel window with the object selecter is displayed. By default, this window is hidden, but it will be shown automatically if addObject is called.
+		 */
 		public function get showMainWindow():Boolean
 		{
 			return _mainWindow.visible;
@@ -227,6 +246,9 @@ package com.andrewtraviss.ascalpel
 			_mainWindow.visible = in_value;
 		}
 		
+		/**
+		 * The main display root of AScalpel. This must be added to the stage in order to interact with the tool.
+		 */
 		public function get display():Sprite
 		{
 			return _ui;
@@ -243,4 +265,9 @@ package com.andrewtraviss.ascalpel
 		private static const MAIN_TITLE:String = "AScalpel Object Selector";
 		private static const COMBO_DEFAULT:String = "<Select an object>";
 	}
+}
+
+internal class SingletonToken
+{
+	
 }
